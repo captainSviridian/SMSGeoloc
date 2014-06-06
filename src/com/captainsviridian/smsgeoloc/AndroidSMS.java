@@ -3,7 +3,7 @@ package com.captainsviridian.smsgeoloc;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
+import android.app.IntentService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,13 +17,9 @@ import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
-public class AndroidSMS extends Activity implements LocationListener {
+public class AndroidSMS extends IntentService implements LocationListener {
 	private double latitude = 0;
 	private double longitude = 0;
 	private LocationManager lm;
@@ -96,44 +92,29 @@ public class AndroidSMS extends Activity implements LocationListener {
 	}
 	private periodicSendCoordinates sendingThread;
 	/** Called when the activity is first created. */
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.activity_android_sms);
-    
-      final EditText edittextSmsNumber = (EditText)findViewById(R.id.smsnumber);
-      final EditText edittextSmsText = (EditText)findViewById(R.id.smstext);
-      Button buttonSendSms = (Button)findViewById(R.id.sendsms);
-      Button button_exit_btn = (Button)findViewById(R.id.exit_btn);
-    
-      buttonSendSms.setOnClickListener(new Button.OnClickListener(){
-    	 @Override
-		 public void onClick(View arg0) {
-		  // TODO Auto-generated method stub
-    		 sendSMS(edittextSmsNumber.getText().toString(), edittextSmsText.getText().toString());
-		  }});
-      
-      button_exit_btn.setOnClickListener(new OnClickListener() {
-    	  @Override
-	      public void onClick(View v) {
-	      // TODO Auto-generated method stub
-	      finish();
-	      System.exit(0);
-	      }});
+  public AndroidSMS () {
+	  super("SMSGeolocService");
   }
-  protected void onResume() {
-	  super.onResume();
-	  lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-	  if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
-		  lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
-	  lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, this);
-	  registerReceiver(IncomingSms, intentFilter);
+  protected void onHandleIntent(Intent intent) {
+      while (true) {
+          synchronized (this) {
+              try {
+            	  wait(1000);
+              } catch (Exception e) {
+              }
+          }
+      }
+
   }
-  protected void onPause() {
-	  super.onPause();
-	  lm.removeUpdates(this);
-	  unregisterReceiver(IncomingSms);
-  }
+  public int onStartCommand(Intent intent, int flags, int startId) {
+	    Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+		  lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+		  if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
+			  lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
+		  lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, this);
+		  registerReceiver(IncomingSms, intentFilter);
+	    return super.onStartCommand(intent,flags,startId);
+	}
   protected void sendSMS(String smsNumber, String smsText) {
 	  SmsManager smsManager = SmsManager.getDefault();
 	  smsManager.sendTextMessage(smsNumber, null, smsText, null, null);	  

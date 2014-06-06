@@ -4,41 +4,23 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent"
   >
-<TextView
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:text="Enter Phone Number:"
-  />
-<EditText
-  android:id="@+id/smsnumber"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:inputType="phone"
-  />
-<TextView
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:text="Enter Phone SMS Text:"
-  />
-
-<EditText
-  android:id="@+id/smstext"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  />
 <Button
-  android:id="@+id/sendsms"
+  android:id="@+id/start_btn"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
-  android:text=" Send SMS "
+  android:text="Launch Service"
   />
 
 <Button
-    android:id="@+id/exit_btn"
-    android:layout_width="168dp"
+    android:id="@+id/stop_btn"
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content"
+    android:text="Stop Service" />
+
+<Button
+    android:id="@+id/close_btn"
+    android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="50dp"
-    android:layout_marginTop="100dp"
-    android:text="Close App" />
+    android:text="Close Controler" />
 
 </LinearLayout>
