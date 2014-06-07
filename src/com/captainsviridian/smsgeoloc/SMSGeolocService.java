@@ -19,7 +19,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-public class AndroidSMS extends IntentService implements LocationListener {
+public class SMSGeolocService extends IntentService implements LocationListener {
 	private double latitude = 0;
 	private double longitude = 0;
 	private LocationManager lm;
@@ -41,10 +41,6 @@ public class AndroidSMS extends IntentService implements LocationListener {
 						String phoneNumber = currentMessage.getDisplayOriginatingAddress();					
 						String senderNum = phoneNumber;
 						String message = currentMessage.getDisplayMessageBody();	
-				        int duration = Toast.LENGTH_LONG;
-						/*Toast toast = Toast.makeText(context, "senderNum: "+ senderNum + ", message: " + message, duration);*/
-				        Toast toast = Toast.makeText(context, message, duration);
-						toast.show();
 						parseStringAndSendSms(senderNum, message);
 					} // end for loop
 				} // bundle is null
@@ -81,7 +77,6 @@ public class AndroidSMS extends IntentService implements LocationListener {
 	    	 return null;
 	     }
         protected void onPostExecute(Void result) {
-            Toast.makeText(getApplicationContext(), "Le traitement asynchrone est terminé", Toast.LENGTH_LONG).show();
         }
 		public void stop() {
 			sending = false;
@@ -92,7 +87,7 @@ public class AndroidSMS extends IntentService implements LocationListener {
 	}
 	private periodicSendCoordinates sendingThread;
 	/** Called when the activity is first created. */
-  public AndroidSMS () {
+  public SMSGeolocService () {
 	  super("SMSGeolocService");
   }
   protected void onHandleIntent(Intent intent) {
@@ -106,15 +101,19 @@ public class AndroidSMS extends IntentService implements LocationListener {
       }
 
   }
-  public int onStartCommand(Intent intent, int flags, int startId) {
-	    Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+public int onStartCommand(Intent intent, int flags, int startId) {
+	    Toast.makeText(this, "SMSGeoloc service started", Toast.LENGTH_SHORT).show();
 		  lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 		  if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
 			  lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
 		  lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, this);
 		  registerReceiver(IncomingSms, intentFilter);
-	    return super.onStartCommand(intent,flags,startId);
+		  return START_STICKY;
 	}
+  public void onDestroy() {
+	  unregisterReceiver(IncomingSms);
+	  Toast.makeText(this, "SMSGeoloc service stopped", Toast.LENGTH_SHORT).show();
+  }
   protected void sendSMS(String smsNumber, String smsText) {
 	  SmsManager smsManager = SmsManager.getDefault();
 	  smsManager.sendTextMessage(smsNumber, null, smsText, null, null);	  
@@ -124,8 +123,6 @@ public class AndroidSMS extends IntentService implements LocationListener {
 	  sendSMS(number, output);
   }
   public void parseStringAndSendSms(String number, String text) {
-      Toast toast3 = Toast.makeText(this, "parseString: "+text, Toast.LENGTH_SHORT);
-      toast3.show();
 	  TextUtils.StringSplitter splitter = new TextUtils.SimpleStringSplitter(' ');
 	  splitter.setString(text);
 	  List<String> argsList = new ArrayList<String>();
@@ -135,22 +132,10 @@ public class AndroidSMS extends IntentService implements LocationListener {
 	  String[] args = new String[argsList.size()]; 
 	  argsList.toArray(args);
 	  if (args.length > 0) {
-		  String argsOutput = "";
-		  for (int i = 0 ; i < args.length ; i++) {
-			  argsOutput += "Arg "+i+": "+args[i]+"\n";
-		  }
-	      Toast toast2 = Toast.makeText(this, argsOutput, Toast.LENGTH_SHORT);
-	      toast2.show();
 		  if (args[0].matches("geoloc")) {
-		      Toast toast5 = Toast.makeText(this, "geoloc...", Toast.LENGTH_SHORT);
-		      toast5.show();
 			  if (args.length == 3) {
-			      Toast toast6 = Toast.makeText(this, "3 args", Toast.LENGTH_SHORT);
-			      toast6.show();
 				  if (args[1].matches("[0-9]+") && args[2].matches("[0-9]+")) {
 					  if (running == false) {
-					      Toast toast = Toast.makeText(this, "Send location every "+args[2]+" seconds, "+args[1]+" times to "+number, Toast.LENGTH_SHORT);
-					      toast.show();
 					      sendingThread = new periodicSendCoordinates();
 						  sendingThread.execute(number, Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 					  } else {
@@ -159,13 +144,9 @@ public class AndroidSMS extends IntentService implements LocationListener {
 					  }
 				  } else if (args[1].matches("start") && args[2].matches("[0-9]+")) {
 					  if (running == false) {
-					      Toast toast = Toast.makeText(this, "Begin to send location every "+args[2]+" seconds to "+number, Toast.LENGTH_SHORT);
-					      toast.show();
 					      sendingThread = new periodicSendCoordinates();
 						  sendingThread.execute(number, -1, Integer.parseInt(args[2]));
 					  } else {
-					      Toast toast = Toast.makeText(this, "Thread infinite periodic already started", Toast.LENGTH_SHORT);
-					      toast.show();
 						  
 					  }
 				  } else {
@@ -191,15 +172,9 @@ public class AndroidSMS extends IntentService implements LocationListener {
 			      toast.show();
 			  }
 		  } else {
-		      Toast toast = Toast.makeText(this, args[0]+" doesn't match geoloc", Toast.LENGTH_SHORT);
-		      toast.show();		  
 		  }
-	  } else {
-	      Toast toast = Toast.makeText(this, args.length+" arguments are not enough", Toast.LENGTH_SHORT);
-	      toast.show();		  		  
-	  }
-      Toast toast = Toast.makeText(this, "ParseString OUT", Toast.LENGTH_SHORT);
-      toast.show();	
+	  } else {		  		  
+	  }	
   }
   public void onLocationChanged(Location loc) {
 	  latitude = loc.getLatitude();

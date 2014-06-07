@@ -7,7 +7,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.content.Intent;
 
-public class AndroidSMSControl extends Activity {
+public class SMSGeolocUI extends Activity {
 	  public void onCreate(Bundle savedInstanceState) {
 	      super.onCreate(savedInstanceState);
 	      setContentView(R.layout.activity_android_sms);
@@ -16,7 +16,7 @@ public class AndroidSMSControl extends Activity {
 	      Button buttonStop = (Button)findViewById(R.id.stop_btn);
 	      Button buttonClose = (Button)findViewById(R.id.close_btn);
 	      
-		  final Intent serviceIntent = new Intent(this, AndroidSMS.class);
+		  final Intent serviceIntent = new Intent(this, SMSGeolocService.class);
 	    
 	      buttonStart.setOnClickListener(new Button.OnClickListener(){
 	    	 @Override
@@ -33,7 +33,6 @@ public class AndroidSMSControl extends Activity {
 	    	  @Override
 		      public void onClick(View v) {
 	    		  finish();
-	    		  System.exit(0);
 		      }});
 	  }
 	  protected void onResume() {
